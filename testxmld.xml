@@ -1,0 +1,450 @@
+<?xml version='1.0' encoding='windows-1251'?>
+<!DOCTYPE POWERMART SYSTEM "powrmart.dtd">
+<POWERMART REPOSITORY_VERSION="182.91" CREATION_DATE="05/02/2016 16:58:35">
+<REPOSITORY DATABASETYPE="Oracle" CODEPAGE="MS1251" VERSION="182" NAME="RS_TST">
+<FOLDER UUID="d318e01d-c840-4918-a8c9-969f0504dfc1" PERMISSIONS="rwx---r--" DESCRIPTION="" SHARED="NOTSHARED" OWNER="Administrator" GROUP="" NAME="EDW_PREDDS_001">
+    <TASK VERSIONNUMBER="1" TYPE="Command" REUSABLE="YES" NAME="cmd_ETLFW_START_JOB" DESCRIPTION="Команда для запуска процесса управления Джобами PREDDS">
+        <ATTRIBUTE VALUE="YES" NAME="Fail task if any command fails"/>
+        <ATTRIBUTE VALUE="Restart task" NAME="Recovery Strategy"/>
+        <VALUEPAIR VALUE=" python /home/etl/etlfw/startjob.py  $PMFolderName $PMWorkflowName $PMRootDir/ParamFiles/EDW_PREDDS_001.$PMWorkflowName.prm $PMWorkflowRunId $PMIntegrationServiceName" REVERSEASSIGNMENT="NO" NAME="ETLFW Start Job wf_STG_CDC_002_ACNT_CONTRACT" EXECORDER="1"/>
+    </TASK>
+    <TASK VERSIONNUMBER="1" TYPE="Command" REUSABLE="YES" NAME="cmd_ETLFW_FINISH_JOB" DESCRIPTION="Команда для завершения процесса управления Джобами PREDDS">
+        <ATTRIBUTE VALUE="YES" NAME="Fail task if any command fails"/>
+        <ATTRIBUTE VALUE="Restart task" NAME="Recovery Strategy"/>
+        <VALUEPAIR VALUE=" python /home/etl/etlfw/finishjob.py $PMWorkflowName $$wvDWHJobID '' '$$wvEffectiveFrom' '$$wvEffectiveTo' $PMIntegrationServiceName" REVERSEASSIGNMENT="NO" NAME="ETLFW Finish Job" EXECORDER="1"/>
+    </TASK>
+    <CONFIG VERSIONNUMBER="1" NAME="default_session_config" ISDEFAULT="YES" DESCRIPTION="Default session configuration object">
+        <ATTRIBUTE VALUE="" NAME="Advanced"/>
+        <ATTRIBUTE VALUE="NO" NAME="Constraint based load ordering"/>
+        <ATTRIBUTE VALUE="YES" NAME="Cache LOOKUP() function"/>
+        <ATTRIBUTE VALUE="Auto" NAME="Default buffer block size"/>
+        <ATTRIBUTE VALUE="1024" NAME="Line Sequential buffer length"/>
+        <ATTRIBUTE VALUE="5GB" NAME="Maximum Memory Allowed For Auto Memory Attributes"/>
+        <ATTRIBUTE VALUE="10" NAME="Maximum Percentage of Total Memory Allowed For Auto Memory Attributes"/>
+        <ATTRIBUTE VALUE="Auto" NAME="Additional Concurrent Pipelines for Lookup Cache Creation"/>
+        <ATTRIBUTE VALUE="" NAME="Custom Properties"/>
+        <ATTRIBUTE VALUE="Auto" NAME="Pre-build lookup cache"/>
+        <ATTRIBUTE VALUE="Medium" NAME="Optimization Level"/>
+        <ATTRIBUTE VALUE="MM/DD/YYYY HH24:MI:SS.US" NAME="DateTime Format String"/>
+        <ATTRIBUTE VALUE="NO" NAME="Pre 85 Timestamp Compatibility"/>
+        <ATTRIBUTE VALUE="0" NAME="Log Options"/>
+        <ATTRIBUTE VALUE="Session timestamp" NAME="Save session log by"/>
+        <ATTRIBUTE VALUE="0" NAME="Session Log File Max Size"/>
+        <ATTRIBUTE VALUE="0" NAME="Session Log File Max Time Period"/>
+        <ATTRIBUTE VALUE="1" NAME="Maximum Partial Session Log Files"/>
+        <ATTRIBUTE VALUE="1" NAME="Writer Commit Statistics Log Frequency"/>
+        <ATTRIBUTE VALUE="0" NAME="Writer Commit Statistics Log Interval"/>
+        <ATTRIBUTE VALUE="" NAME="Error handling"/>
+        <ATTRIBUTE VALUE="1" NAME="Stop on errors"/>
+        <ATTRIBUTE VALUE="None" NAME="Override tracing"/>
+        <ATTRIBUTE VALUE="Stop" NAME="On Stored Procedure error"/>
+        <ATTRIBUTE VALUE="Stop" NAME="On Pre-session command task error"/>
+        <ATTRIBUTE VALUE="Stop" NAME="On Pre-Post SQL error"/>
+        <ATTRIBUTE VALUE="NO" NAME="Enable Recovery"/>
+        <ATTRIBUTE VALUE="None" NAME="Error Log Type"/>
+        <ATTRIBUTE VALUE="" NAME="Error Log Table Name Prefix"/>
+        <ATTRIBUTE VALUE="PMError.log" NAME="Error Log File Name"/>
+        <ATTRIBUTE VALUE="NO" NAME="Log Source Row Data"/>
+        <ATTRIBUTE VALUE="|" NAME="Data Column Delimiter"/>
+        <ATTRIBUTE VALUE="" NAME="Partitioning Options"/>
+        <ATTRIBUTE VALUE="Disabled" NAME="Dynamic Partitioning"/>
+        <ATTRIBUTE VALUE="1" NAME="Number of Partitions"/>
+        <ATTRIBUTE VALUE="Auto" NAME="Multiplication Factor"/>
+        <ATTRIBUTE VALUE="" NAME="Session on Grid"/>
+        <ATTRIBUTE VALUE="NO" NAME="Is Enabled"/>
+    </CONFIG>
+    <WORKFLOW VERSIONNUMBER="1" TASKS_MUST_RUN_ON_SERVER="NO" SUSPEND_ON_ERROR="NO" SERVER_DOMAINNAME="Domain_EDW_DevTst" SERVERNAME="IS_TST" SCHEDULERNAME="Scheduler" REUSABLE_SCHEDULER="NO" NAME="wf_PREDDS_001_COUNTERP_NPERS_ESTATE" ISVALID="YES" ISSERVICE="NO" ISRUNNABLESERVICE="NO" ISENABLED="YES" DESCRIPTION="">
+        <SCHEDULER VERSIONNUMBER="1" REUSABLE="NO" NAME="Scheduler" DESCRIPTION="">
+            <SCHEDULEINFO SCHEDULETYPE="ONDEMAND"/>
+        </SCHEDULER>
+        <TASK VERSIONNUMBER="1" TYPE="Start" REUSABLE="NO" NAME="Start" DESCRIPTION=""/>
+        <SESSION VERSIONNUMBER="1" SORTORDER="Binary" REUSABLE="NO" NAME="s_PREDDS_001_COUNTERP_NPERS_ESTATE" MAPPINGNAME="m_PREDDS_001_COUNTERP_NPERS_ESTATE" ISVALID="YES" DESCRIPTION="">
+            <SESSTRANSFORMATIONINST TRANSFORMATIONTYPE="Target Definition" TRANSFORMATIONNAME="COUNTERP_NPERS_ESTATE" STAGE="1" SINSTANCENAME="COUNTERP_NPERS_ESTATE" PIPELINE="3" PARTITIONTYPE="PASS THROUGH" ISREPARTITIONPOINT="YES">
+                <ATTRIBUTE VALUE="call etl.etl_utils_api.predds_trunc_part_prc('COUNTERP_NPERS_ESTATE', '$$mpSourceSystemCCD')" NAME="Pre SQL"/>
+                <ATTRIBUTE VALUE="call etl.etl_utils_api.get_inc_tab_stats('PREDDS','COUNTERP_NPERS_ESTATE')" NAME="Post SQL"/>
+            </SESSTRANSFORMATIONINST>
+            <SESSTRANSFORMATIONINST TRANSFORMATIONTYPE="Expression" TRANSFORMATIONNAME="EXP_FIL_SRC_SFORMS" STAGE="2" SINSTANCENAME="EXP_FIL_SRC_SFORMS" PIPELINE="2" ISREPARTITIONPOINT="NO">
+                <PARTITION NAME="Partition #1" DESCRIPTION=""/>
+            </SESSTRANSFORMATIONINST>
+            <SESSTRANSFORMATIONINST TRANSFORMATIONTYPE="Expression" TRANSFORMATIONNAME="EXP_FIL_SRC_HFORMS" STAGE="2" SINSTANCENAME="EXP_FIL_SRC_HFORMS" PIPELINE="1" ISREPARTITIONPOINT="NO">
+                <PARTITION NAME="Partition #1" DESCRIPTION=""/>
+            </SESSTRANSFORMATIONINST>
+            <SESSTRANSFORMATIONINST TRANSFORMATIONTYPE="Source Definition" TRANSFORMATIONNAME="HYPO_FORMS" STAGE="0" SINSTANCENAME="HYPO_FORMS" PIPELINE="0" ISREPARTITIONPOINT="NO"/>
+            <SESSTRANSFORMATIONINST TRANSFORMATIONTYPE="Source Qualifier" TRANSFORMATIONNAME="SQ_HYPO_FORMS" STAGE="2" SINSTANCENAME="SQ_HYPO_FORMS" PIPELINE="1" PARTITIONTYPE="PASS THROUGH" ISREPARTITIONPOINT="YES">
+                <ATTRIBUTE VALUE="SELECT /*+parallel(16)*/
+ REFERENCE,
+ BRANCH,
+ IS_REALTY1,
+ REALTY1_COST,
+ IS_REALTY2,
+ REALTY2_COST,
+ IS_REALTY3,
+ REALTY3_COST,
+ IS_AUTO1,
+ AUTO1_COST,
+ IS_AUTO2,
+ AUTO2_COST,
+ 'I' DML_TYPE
+  FROM TDS.CA_GET_HFORMS t
+ WHERE t.valid_to_dttm = dt_inf(1) AND REALTY1_COST &lt; POWER(10, 15)
+   AND ((IS_REALTY1 IS NOT NULL AND IS_REALTY1 &lt;&gt; -1) OR
+       (IS_REALTY2 IS NOT NULL AND IS_REALTY2 &lt;&gt; -1) OR
+       (IS_REALTY3 IS NOT NULL AND IS_REALTY3 &lt;&gt; -1) OR
+       (IS_AUTO1 IS NOT NULL AND IS_AUTO1 &lt;&gt; -1) OR
+       (IS_AUTO2 IS NOT NULL AND IS_AUTO2 &lt;&gt; -1))" NAME="Sql Query"/>
+            </SESSTRANSFORMATIONINST>
+            <SESSTRANSFORMATIONINST TRANSFORMATIONTYPE="Source Definition" TRANSFORMATIONNAME="SCORING_FORMS" STAGE="0" SINSTANCENAME="SCORING_FORMS" PIPELINE="0" ISREPARTITIONPOINT="NO"/>
+            <SESSTRANSFORMATIONINST TRANSFORMATIONTYPE="Source Qualifier" TRANSFORMATIONNAME="SQ_SCORING_FORMS" STAGE="2" SINSTANCENAME="SQ_SCORING_FORMS" PIPELINE="2" PARTITIONTYPE="PASS THROUGH" ISREPARTITIONPOINT="YES">
+                <ATTRIBUTE VALUE="SELECT /*+parallel(16)*/
+ REFERENCE,
+ BRANCH,
+ IS_FLAT,
+ FLAT_GET_METHOD,
+ IS_COTTAGE,
+ COTTAGE_GET_METHOD,
+ IS_AUTO,
+ AUTO_GET_METHOD,
+ IS_GROUND,
+ 'I' DML_TYPE
+  FROM TDS.CA_GET_SFORMS t
+ WHERE T.VALID_TO_DTTM = DT_INF(1)
+   AND ((IS_FLAT IS NOT NULL AND IS_FLAT &lt;&gt; 0) OR
+       (IS_COTTAGE IS NOT NULL AND IS_COTTAGE &lt;&gt; 0) OR
+       (IS_AUTO IS NOT NULL AND IS_AUTO &lt;&gt; 0) OR
+       (IS_GROUND IS NOT NULL AND IS_GROUND &lt;&gt; 0))" NAME="Sql Query"/>
+            </SESSTRANSFORMATIONINST>
+            <SESSTRANSFORMATIONINST TRANSFORMATIONTYPE="Expression" TRANSFORMATIONNAME="EXP_SRC_SFORMS" STAGE="2" SINSTANCENAME="EXP_SRC_SFORMS" PIPELINE="2" ISREPARTITIONPOINT="NO">
+                <PARTITION NAME="Partition #1" DESCRIPTION=""/>
+            </SESSTRANSFORMATIONINST>
+            <SESSTRANSFORMATIONINST TRANSFORMATIONTYPE="Expression" TRANSFORMATIONNAME="EXP_SRC_HFORMS" STAGE="2" SINSTANCENAME="EXP_SRC_HFORMS" PIPELINE="1" ISREPARTITIONPOINT="NO">
+                <PARTITION NAME="Partition #1" DESCRIPTION=""/>
+            </SESSTRANSFORMATIONINST>
+            <SESSTRANSFORMATIONINST TRANSFORMATIONTYPE="Normalizer" TRANSFORMATIONNAME="NRM_SFORMS" STAGE="2" SINSTANCENAME="NRM_SFORMS" PIPELINE="2" ISREPARTITIONPOINT="NO">
+                <PARTITION NAME="Partition #1" DESCRIPTION=""/>
+            </SESSTRANSFORMATIONINST>
+            <SESSTRANSFORMATIONINST TRANSFORMATIONTYPE="Expression" TRANSFORMATIONNAME="EXP_NRM_SFORMS" STAGE="2" SINSTANCENAME="EXP_NRM_SFORMS" PIPELINE="2" ISREPARTITIONPOINT="NO">
+                <PARTITION NAME="Partition #1" DESCRIPTION=""/>
+            </SESSTRANSFORMATIONINST>
+            <SESSTRANSFORMATIONINST TRANSFORMATIONTYPE="Expression" TRANSFORMATIONNAME="EXP_NRM_HFORMS" STAGE="2" SINSTANCENAME="EXP_NRM_HFORMS" PIPELINE="1" ISREPARTITIONPOINT="NO">
+                <PARTITION NAME="Partition #1" DESCRIPTION=""/>
+            </SESSTRANSFORMATIONINST>
+            <SESSTRANSFORMATIONINST TRANSFORMATIONTYPE="Custom Transformation" TRANSFORMATIONNAME="UNI_ALL_SOURCES" STAGE="2" SINSTANCENAME="UNI_ALL_SOURCES" PIPELINE="3" ISREPARTITIONPOINT="NO">
+                <SESSTRANSFORMATIONGROUP GROUP="SFORMS"/>
+                <SESSTRANSFORMATIONGROUP GROUP="HFORMS"/>
+                <PARTITION NAME="Partition #1" DESCRIPTION=""/>
+            </SESSTRANSFORMATIONINST>
+            <SESSTRANSFORMATIONINST TRANSFORMATIONTYPE="Expression" TRANSFORMATIONNAME="EXP_UNI_SOURCES" STAGE="2" SINSTANCENAME="EXP_UNI_SOURCES" PIPELINE="3" ISREPARTITIONPOINT="NO">
+                <PARTITION NAME="Partition #1" DESCRIPTION=""/>
+            </SESSTRANSFORMATIONINST>
+            <SESSTRANSFORMATIONINST TRANSFORMATIONTYPE="Normalizer" TRANSFORMATIONNAME="NRM_HFORMS" STAGE="2" SINSTANCENAME="NRM_HFORMS" PIPELINE="1" ISREPARTITIONPOINT="NO">
+                <PARTITION NAME="Partition #1" DESCRIPTION=""/>
+            </SESSTRANSFORMATIONINST>
+            <SESSTRANSFORMATIONINST TRANSFORMATIONTYPE="Expression" TRANSFORMATIONNAME="EXP_TARGET" STAGE="2" SINSTANCENAME="EXP_TARGET" PIPELINE="3" ISREPARTITIONPOINT="NO">
+                <PARTITION NAME="Partition #1" DESCRIPTION=""/>
+            </SESSTRANSFORMATIONINST>
+            <SESSTRANSFORMATIONINST TRANSFORMATIONTYPE="Filter" TRANSFORMATIONNAME="FIL_NULL_HF" STAGE="2" SINSTANCENAME="FIL_NULL_HF" PIPELINE="1" ISREPARTITIONPOINT="NO">
+                <PARTITION NAME="Partition #1" DESCRIPTION=""/>
+            </SESSTRANSFORMATIONINST>
+            <SESSTRANSFORMATIONINST TRANSFORMATIONTYPE="Filter" TRANSFORMATIONNAME="FIL_NULL_SF" STAGE="2" SINSTANCENAME="FIL_NULL_SF" PIPELINE="2" ISREPARTITIONPOINT="NO">
+                <PARTITION NAME="Partition #1" DESCRIPTION=""/>
+            </SESSTRANSFORMATIONINST>
+            <SESSTRANSFORMATIONINST TRANSFORMATIONTYPE="Lookup Procedure" TRANSFORMATIONNAME="mp_xREFMAP_ESTATE_OBTAIN_TYPE.LKP_IDMAP_XREF_ESTATE_OBTAIN_TYPE" STAGE="2" SINSTANCENAME="mp_xREFMAP_ESTATE_OBTAIN_TYPE.LKP_IDMAP_XREF_ESTATE_OBTAIN_TYPE" PIPELINE="3" ISREPARTITIONPOINT="NO">
+                <PARTITION NAME="Partition #1" DESCRIPTION=""/>
+                <ATTRIBUTE NAME="Connection Information" VALUE="Relational:EDW_IDMAP_PROD"/>
+            </SESSTRANSFORMATIONINST>
+            <SESSTRANSFORMATIONINST TRANSFORMATIONTYPE="Lookup Procedure" TRANSFORMATIONNAME="mp_xREFMAP_ESTATE_OBTAIN_TYPE.LKP_XREFMAP_ESTATE_OBTAIN_TYPE" STAGE="2" SINSTANCENAME="mp_xREFMAP_ESTATE_OBTAIN_TYPE.LKP_XREFMAP_ESTATE_OBTAIN_TYPE" PIPELINE="3" ISREPARTITIONPOINT="NO">
+                <PARTITION NAME="Partition #1" DESCRIPTION=""/>
+                <ATTRIBUTE NAME="Connection Information" VALUE="Relational:EDW_XREFMAP_PROD"/>
+            </SESSTRANSFORMATIONINST>
+            <SESSTRANSFORMATIONINST TRANSFORMATIONTYPE="Expression" TRANSFORMATIONNAME="mp_xREFMAP_ESTATE_OBTAIN_TYPE.EXP_RETURN_VAL" STAGE="2" SINSTANCENAME="mp_xREFMAP_ESTATE_OBTAIN_TYPE.EXP_RETURN_VAL" PIPELINE="3" ISREPARTITIONPOINT="NO">
+                <PARTITION NAME="Partition #1" DESCRIPTION=""/>
+            </SESSTRANSFORMATIONINST>
+            <SESSTRANSFORMATIONINST TRANSFORMATIONTYPE="Lookup Procedure" TRANSFORMATIONNAME="mp_IDMAP_ORPHAN_XREF_ESTATE_TYPE.LKP_IDMAP_XREF_ESTATE_TYPE" STAGE="2" SINSTANCENAME="mp_IDMAP_ORPHAN_XREF_ESTATE_TYPE.LKP_IDMAP_XREF_ESTATE_TYPE" PIPELINE="3" ISREPARTITIONPOINT="NO">
+                <PARTITION NAME="Partition #1" DESCRIPTION=""/>
+                <ATTRIBUTE VALUE="Relational:EDW_IDMAP" NAME="Connection Information"/>
+            </SESSTRANSFORMATIONINST>
+            <SESSTRANSFORMATIONINST TRANSFORMATIONTYPE="Expression" TRANSFORMATIONNAME="mp_IDMAP_ORPHAN_XREF_ESTATE_TYPE.EXP_SRC_NAME" STAGE="2" SINSTANCENAME="mp_IDMAP_ORPHAN_XREF_ESTATE_TYPE.EXP_SRC_NAME" PIPELINE="3" ISREPARTITIONPOINT="NO">
+                <PARTITION NAME="Partition #1" DESCRIPTION=""/>
+            </SESSTRANSFORMATIONINST>
+            <SESSTRANSFORMATIONINST TRANSFORMATIONTYPE="Stored Procedure" TRANSFORMATIONNAME="mp_IDMAP_ORPHAN_XREF_ESTATE_TYPE.ODS_INS_IDMAP_ORPH_FNC" STAGE="0" SINSTANCENAME="mp_IDMAP_ORPHAN_XREF_ESTATE_TYPE.ODS_INS_IDMAP_ORPH_FNC" PIPELINE="0" ISREPARTITIONPOINT="NO"/>
+            <SESSTRANSFORMATIONINST TRANSFORMATIONTYPE="Lookup Procedure" TRANSFORMATIONNAME="mp_IDMAP_ORPHAN_ESTATE_RK.LKP_IDMAP_COUNTERPARTY" STAGE="2" SINSTANCENAME="mp_IDMAP_ORPHAN_ESTATE_RK.LKP_IDMAP_COUNTERPARTY" PIPELINE="3" ISREPARTITIONPOINT="NO">
+                <PARTITION NAME="Partition #1" DESCRIPTION=""/>
+            </SESSTRANSFORMATIONINST>
+            <SESSTRANSFORMATIONINST TRANSFORMATIONTYPE="Expression" TRANSFORMATIONNAME="mp_IDMAP_ORPHAN_ESTATE_RK.EXP_SRC" STAGE="2" SINSTANCENAME="mp_IDMAP_ORPHAN_ESTATE_RK.EXP_SRC" PIPELINE="3" ISREPARTITIONPOINT="NO">
+                <PARTITION NAME="Partition #1" DESCRIPTION=""/>
+            </SESSTRANSFORMATIONINST>
+            <SESSTRANSFORMATIONINST TRANSFORMATIONTYPE="Stored Procedure" TRANSFORMATIONNAME="mp_IDMAP_ORPHAN_ESTATE_RK.ODS_INS_IDMAP_ORPH_FNC" STAGE="0" SINSTANCENAME="mp_IDMAP_ORPHAN_ESTATE_RK.ODS_INS_IDMAP_ORPH_FNC" PIPELINE="0" ISREPARTITIONPOINT="NO"/>
+            <SESSTRANSFORMATIONINST TRANSFORMATIONTYPE="Lookup Procedure" TRANSFORMATIONNAME="mp_IDMAP_ORPHAN_COUNTRP_NAT_PERS_RK.LKP_IDMAP_COUNTERPARTY" STAGE="2" SINSTANCENAME="mp_IDMAP_ORPHAN_COUNTRP_NAT_PERS_RK.LKP_IDMAP_COUNTERPARTY" PIPELINE="3" ISREPARTITIONPOINT="NO">
+                <PARTITION NAME="Partition #1" DESCRIPTION=""/>
+            </SESSTRANSFORMATIONINST>
+            <SESSTRANSFORMATIONINST TRANSFORMATIONTYPE="Expression" TRANSFORMATIONNAME="mp_IDMAP_ORPHAN_COUNTRP_NAT_PERS_RK.EXP_SRC" STAGE="2" SINSTANCENAME="mp_IDMAP_ORPHAN_COUNTRP_NAT_PERS_RK.EXP_SRC" PIPELINE="3" ISREPARTITIONPOINT="NO">
+                <PARTITION NAME="Partition #1" DESCRIPTION=""/>
+            </SESSTRANSFORMATIONINST>
+            <SESSTRANSFORMATIONINST TRANSFORMATIONTYPE="Stored Procedure" TRANSFORMATIONNAME="mp_IDMAP_ORPHAN_COUNTRP_NAT_PERS_RK.ODS_INS_IDMAP_ORPH_FNC" STAGE="0" SINSTANCENAME="mp_IDMAP_ORPHAN_COUNTRP_NAT_PERS_RK.ODS_INS_IDMAP_ORPH_FNC" PIPELINE="0" ISREPARTITIONPOINT="NO"/>
+            <CONFIGREFERENCE TYPE="Session config" REFOBJECTNAME="default_session_config"/>
+            <SESSIONCOMPONENT TYPE="Pre-session variable assignment" REUSABLE="NO" REFOBJECTNAME="presession_variable_assignment">
+                <TASK VERSIONNUMBER="1" TYPE="Command" REUSABLE="NO" NAME="presession_variable_assignment" DESCRIPTION="">
+                    <ATTRIBUTE VALUE="NO" NAME="Fail task if any command fails"/>
+                    <ATTRIBUTE VALUE="Fail task and continue workflow" NAME="Recovery Strategy"/>
+                </TASK>
+            </SESSIONCOMPONENT>
+            <SESSIONCOMPONENT TYPE="Post-session success variable assignment" REUSABLE="NO" REFOBJECTNAME="postsession_success_variable_assignment">
+                <TASK VERSIONNUMBER="1" TYPE="Command" REUSABLE="NO" NAME="postsession_success_variable_assignment" DESCRIPTION="">
+                    <ATTRIBUTE VALUE="NO" NAME="Fail task if any command fails"/>
+                    <ATTRIBUTE VALUE="Fail task and continue workflow" NAME="Recovery Strategy"/>
+                </TASK>
+                <VALUEPAIR VALUE="$$spDWHJobID" REVERSEASSIGNMENT="NO" NAME="$$wvDWHJobID" EXECORDER="1"/>
+                <VALUEPAIR VALUE="$$mvEffectiveFrom" REVERSEASSIGNMENT="NO" NAME="$$wvEffectiveFrom" EXECORDER="2"/>
+                <VALUEPAIR VALUE="$$mpEffectiveTo" REVERSEASSIGNMENT="NO" NAME="$$wvEffectiveTo" EXECORDER="3"/>
+            </SESSIONCOMPONENT>
+            <SESSIONCOMPONENT TYPE="Post-session failure variable assignment" REUSABLE="NO" REFOBJECTNAME="postsession_failure_variable_assignment">
+                <TASK VERSIONNUMBER="1" TYPE="Command" REUSABLE="NO" NAME="postsession_failure_variable_assignment" DESCRIPTION="">
+                    <ATTRIBUTE VALUE="NO" NAME="Fail task if any command fails"/>
+                    <ATTRIBUTE VALUE="Fail task and continue workflow" NAME="Recovery Strategy"/>
+                </TASK>
+            </SESSIONCOMPONENT>
+            <SESSIONEXTENSION TYPE="WRITER" TRANSFORMATIONTYPE="Target Definition" SUBTYPE="Relational Writer" SINSTANCENAME="COUNTERP_NPERS_ESTATE" NAME="Relational Writer">
+                <CONNECTIONREFERENCE VARIABLE="" CONNECTIONTYPE="Relational" CONNECTIONSUBTYPE="Oracle" CONNECTIONNUMBER="1" CONNECTIONNAME="EDW_PREDDS" CNXREFNAME="DB Connection"/>
+                <ATTRIBUTE VALUE="Bulk" NAME="Target load type"/>
+                <ATTRIBUTE VALUE="YES" NAME="Insert"/>
+                <ATTRIBUTE VALUE="YES" NAME="Update as Update"/>
+                <ATTRIBUTE VALUE="NO" NAME="Update as Insert"/>
+                <ATTRIBUTE VALUE="NO" NAME="Update else Insert"/>
+                <ATTRIBUTE VALUE="YES" NAME="Delete"/>
+                <ATTRIBUTE VALUE="NO" NAME="Truncate target table option"/>
+                <ATTRIBUTE VALUE="$PMBadFileDir\" NAME="Reject file directory"/>
+                <ATTRIBUTE VALUE="counterp_npers_estate1.bad" NAME="Reject filename"/>
+            </SESSIONEXTENSION>
+            <SESSIONEXTENSION TYPE="READER" TRANSFORMATIONTYPE="Source Definition" SUBTYPE="Relational Reader" SINSTANCENAME="HYPO_FORMS" NAME="Relational Reader" DSQINSTTYPE="Source Qualifier" DSQINSTNAME="SQ_HYPO_FORMS"/>
+            <SESSIONEXTENSION TYPE="READER" TRANSFORMATIONTYPE="Source Qualifier" SUBTYPE="Relational Reader" SINSTANCENAME="SQ_HYPO_FORMS" NAME="Relational Reader">
+                <CONNECTIONREFERENCE CNXREFNAME="DB Connection" CONNECTIONNAME="EDW_ETL_PROD" CONNECTIONNUMBER="1" CONNECTIONSUBTYPE="Oracle" CONNECTIONTYPE="Relational" VARIABLE=""/>
+            </SESSIONEXTENSION>
+            <SESSIONEXTENSION TYPE="READER" TRANSFORMATIONTYPE="Source Definition" SUBTYPE="Relational Reader" SINSTANCENAME="SCORING_FORMS" NAME="Relational Reader" DSQINSTTYPE="Source Qualifier" DSQINSTNAME="SQ_SCORING_FORMS"/>
+            <SESSIONEXTENSION TYPE="READER" TRANSFORMATIONTYPE="Source Qualifier" SUBTYPE="Relational Reader" SINSTANCENAME="SQ_SCORING_FORMS" NAME="Relational Reader">
+                <CONNECTIONREFERENCE CNXREFNAME="DB Connection" CONNECTIONNAME="EDW_ETL_PROD" CONNECTIONNUMBER="1" CONNECTIONSUBTYPE="Oracle" CONNECTIONTYPE="Relational" VARIABLE=""/>
+            </SESSIONEXTENSION>
+            <SESSIONEXTENSION TYPE="LOOKUPEXTENSION" TRANSFORMATIONTYPE="Lookup Procedure" SUBTYPE="Relational Lookup" SINSTANCENAME="mp_xREFMAP_ESTATE_OBTAIN_TYPE.LKP_IDMAP_XREF_ESTATE_OBTAIN_TYPE" NAME="Relational Lookup">
+                <CONNECTIONREFERENCE CNXREFNAME="DB Connection" CONNECTIONNAME="EDW_IDMAP_PROD" CONNECTIONNUMBER="1" CONNECTIONSUBTYPE="Oracle" CONNECTIONTYPE="Relational" VARIABLE=""/>
+            </SESSIONEXTENSION>
+            <SESSIONEXTENSION TYPE="LOOKUPEXTENSION" TRANSFORMATIONTYPE="Lookup Procedure" SUBTYPE="Relational Lookup" SINSTANCENAME="mp_xREFMAP_ESTATE_OBTAIN_TYPE.LKP_XREFMAP_ESTATE_OBTAIN_TYPE" NAME="Relational Lookup">
+                <CONNECTIONREFERENCE CNXREFNAME="DB Connection" CONNECTIONNAME="EDW_XREFMAP_PROD" CONNECTIONNUMBER="1" CONNECTIONSUBTYPE="Oracle" CONNECTIONTYPE="Relational" VARIABLE=""/>
+            </SESSIONEXTENSION>
+            <SESSIONEXTENSION TYPE="LOOKUPEXTENSION" TRANSFORMATIONTYPE="Lookup Procedure" SUBTYPE="Relational Lookup" SINSTANCENAME="mp_IDMAP_ORPHAN_XREF_ESTATE_TYPE.LKP_IDMAP_XREF_ESTATE_TYPE" NAME="Relational Lookup">
+                <CONNECTIONREFERENCE VARIABLE="" CONNECTIONTYPE="Relational" CONNECTIONSUBTYPE="Oracle" CONNECTIONNUMBER="1" CONNECTIONNAME="EDW_IDMAP" CNXREFNAME="DB Connection"/>
+            </SESSIONEXTENSION>
+            <SESSIONEXTENSION TYPE="LOOKUPEXTENSION" TRANSFORMATIONTYPE="Lookup Procedure" SUBTYPE="Relational Lookup" SINSTANCENAME="mp_IDMAP_ORPHAN_ESTATE_RK.LKP_IDMAP_COUNTERPARTY" NAME="Relational Lookup">
+                <CONNECTIONREFERENCE VARIABLE="" CONNECTIONTYPE="Relational" CONNECTIONSUBTYPE="Oracle" CONNECTIONNUMBER="1" CONNECTIONNAME="EDW_IDMAP" CNXREFNAME="DB Connection"/>
+            </SESSIONEXTENSION>
+            <SESSIONEXTENSION TYPE="LOOKUPEXTENSION" TRANSFORMATIONTYPE="Lookup Procedure" SUBTYPE="Relational Lookup" SINSTANCENAME="mp_IDMAP_ORPHAN_COUNTRP_NAT_PERS_RK.LKP_IDMAP_COUNTERPARTY" NAME="Relational Lookup">
+                <CONNECTIONREFERENCE VARIABLE="" CONNECTIONTYPE="Relational" CONNECTIONSUBTYPE="Oracle" CONNECTIONNUMBER="1" CONNECTIONNAME="EDW_IDMAP" CNXREFNAME="DB Connection"/>
+            </SESSIONEXTENSION>
+            <ATTRIBUTE VALUE="" NAME="General Options"/>
+            <ATTRIBUTE VALUE="NO" NAME="Write Backward Compatible Session Log File"/>
+            <ATTRIBUTE VALUE="s_PREDDS_001_COUNTERP_ESTATE.log" NAME="Session Log File Name"/>
+            <ATTRIBUTE VALUE="$PMSessionLogDir\" NAME="Session Log File directory"/>
+            <ATTRIBUTE VALUE="$PMRootDir/ParamFiles/EDW_PREDDS_001.wf_PREDDS_001_COUNTERP_NPERS_ESTATE.prm" NAME="Parameter Filename"/>
+            <ATTRIBUTE VALUE="NO" NAME="Enable Test Load"/>
+            <ATTRIBUTE VALUE="" NAME="$Source connection value"/>
+            <ATTRIBUTE VALUE="" NAME="$Target connection value"/>
+            <ATTRIBUTE VALUE="Insert" NAME="Treat source rows as"/>
+            <ATTRIBUTE VALUE="Target" NAME="Commit Type"/>
+            <ATTRIBUTE VALUE="1000000000" NAME="Commit Interval"/>
+            <ATTRIBUTE VALUE="YES" NAME="Commit On End Of File"/>
+            <ATTRIBUTE VALUE="NO" NAME="Rollback Transactions on Errors"/>
+            <ATTRIBUTE VALUE="Fail task and continue workflow" NAME="Recovery Strategy"/>
+            <ATTRIBUTE VALUE="" NAME="Java Classpath"/>
+            <ATTRIBUTE VALUE="" NAME="Performance"/>
+            <ATTRIBUTE VALUE="Auto" NAME="DTM buffer size"/>
+            <ATTRIBUTE VALUE="YES" NAME="Collect performance data"/>
+            <ATTRIBUTE VALUE="NO" NAME="Write performance data to repository"/>
+            <ATTRIBUTE VALUE="NO" NAME="Incremental Aggregation"/>
+            <ATTRIBUTE VALUE="NO" NAME="Enable high precision"/>
+            <ATTRIBUTE VALUE="NO" NAME="Session retry on deadlock"/>
+            <ATTRIBUTE VALUE="None" NAME="Pushdown Optimization"/>
+            <ATTRIBUTE VALUE="NO" NAME="Allow Temporary View for Pushdown"/>
+            <ATTRIBUTE VALUE="NO" NAME="Allow Temporary Sequence for Pushdown"/>
+            <ATTRIBUTE VALUE="NO" NAME="Allow Pushdown for User Incompatible Connections"/>
+            <METADATAEXTENSION VENDORNAME="INFORMATICA" VALUE="" NAME="Author" MAXLENGTH="256" ISSHAREWRITE="NO" ISSHAREREAD="NO" ISREUSABLE="YES" ISCLIENTVISIBLE="YES" ISCLIENTEDITABLE="YES" DOMAINNAME="User Defined Metadata Domain" DESCRIPTION="Разработчик создавший объект" DATATYPE="STRING"/>
+            <METADATAEXTENSION VENDORNAME="INFORMATICA" VALUE="" NAME="Creation Date" MAXLENGTH="10" ISSHAREWRITE="NO" ISSHAREREAD="NO" ISREUSABLE="YES" ISCLIENTVISIBLE="YES" ISCLIENTEDITABLE="YES" DOMAINNAME="User Defined Metadata Domain" DESCRIPTION="Дата создания\последнего обновления объекта
+в формате DD\MM\YYYY" DATATYPE="STRING"/>
+            <METADATAEXTENSION VENDORNAME="INFORMATICA" VALUE="" NAME="Doc Link" MAXLENGTH="256" ISSHAREWRITE="NO" ISSHAREREAD="NO" ISREUSABLE="YES" ISCLIENTVISIBLE="YES" ISCLIENTEDITABLE="YES" DOMAINNAME="User Defined Metadata Domain" DESCRIPTION="Ссылка изи название документа в котором описаны свойства соответвующего объекта" DATATYPE="STRING"/>
+            <METADATAEXTENSION VENDORNAME="INFORMATICA" VALUE="" NAME="GIT Info" MAXLENGTH="256" ISSHAREWRITE="NO" ISSHAREREAD="NO" ISREUSABLE="YES" ISCLIENTVISIBLE="YES" ISCLIENTEDITABLE="YES" DOMAINNAME="User Defined Metadata Domain" DESCRIPTION="Информация из Git репозитория: Branch, Tag, Commit" DATATYPE="STRING"/>
+        </SESSION>
+        <SESSION VERSIONNUMBER="1" SORTORDER="Binary" REUSABLE="NO" NAME="s_IDMAP_PREDDS_001_NPERS_ESTATE" MAPPINGNAME="m_DUMMY" ISVALID="YES" DESCRIPTION="">
+            <SESSTRANSFORMATIONINST TRANSFORMATIONTYPE="Target Definition" TRANSFORMATIONNAME="DUAL1" STAGE="1" SINSTANCENAME="DUAL1" PIPELINE="1" PARTITIONTYPE="PASS THROUGH" ISREPARTITIONPOINT="YES">
+                <ATTRIBUTE VALUE="begin
+etl.ods_ins_idmap_prc('scoring_forms','001','counterparty','0','CCD',i_ccd_ncd_prefix =&gt; 'S|#%',i_ccd_ncd_sufix =&gt; '|#%FLAT',i_incr_where_clause =&gt; 'DML_TYPE != ''D''')\;
+etl.ods_ins_idmap_prc('scoring_forms','001','counterparty','0','CCD',i_ccd_ncd_prefix =&gt; 'S|#%',i_ccd_ncd_sufix =&gt; '|#%COTTAGE',i_incr_where_clause =&gt; 'DML_TYPE != ''D''')\;
+etl.ods_ins_idmap_prc('scoring_forms','001','counterparty','0','CCD',i_ccd_ncd_prefix =&gt; 'S|#%',i_ccd_ncd_sufix =&gt; '|#%AUTO',i_incr_where_clause =&gt; 'DML_TYPE != ''D''')\;
+etl.ods_ins_idmap_prc('scoring_forms','001','counterparty','0','CCD',i_ccd_ncd_prefix =&gt; 'S|#%',i_ccd_ncd_sufix =&gt; '|#%GROUND',i_incr_where_clause =&gt; 'DML_TYPE != ''D''')\;
+
+etl.ods_ins_idmap_prc('hypo_forms','001','counterparty','0','CCD',i_ccd_ncd_prefix =&gt; 'H|#%',i_ccd_ncd_sufix =&gt; '|#%AUTO1',i_incr_where_clause =&gt; 'DML_TYPE != ''D''')\;
+etl.ods_ins_idmap_prc('hypo_forms','001','counterparty','0','CCD',i_ccd_ncd_prefix =&gt; 'H|#%',i_ccd_ncd_sufix =&gt; '|#%AUTO2',i_incr_where_clause =&gt; 'DML_TYPE != ''D''')\;
+etl.ods_ins_idmap_prc('hypo_forms','001','counterparty','0','CCD',i_ccd_ncd_prefix =&gt; 'H|#%',i_ccd_ncd_sufix =&gt; '|#%REAL1',i_incr_where_clause =&gt; 'DML_TYPE != ''D''')\;
+etl.ods_ins_idmap_prc('hypo_forms','001','counterparty','0','CCD',i_ccd_ncd_prefix =&gt; 'H|#%',i_ccd_ncd_sufix =&gt; '|#%REAL2',i_incr_where_clause =&gt; 'DML_TYPE != ''D''')\;
+etl.ods_ins_idmap_prc('hypo_forms','001','counterparty','0','CCD',i_ccd_ncd_prefix =&gt; 'H|#%',i_ccd_ncd_sufix =&gt; '|#%REAL3',i_incr_where_clause =&gt; 'DML_TYPE != ''D''')\;
+end\;" NAME="Pre SQL"/>
+            </SESSTRANSFORMATIONINST>
+            <SESSTRANSFORMATIONINST TRANSFORMATIONTYPE="Source Qualifier" TRANSFORMATIONNAME="SQ_DUAL" STAGE="2" SINSTANCENAME="SQ_DUAL" PIPELINE="1" PARTITIONTYPE="PASS THROUGH" ISREPARTITIONPOINT="YES"/>
+            <SESSTRANSFORMATIONINST TRANSFORMATIONTYPE="Source Definition" TRANSFORMATIONNAME="DUAL" STAGE="0" SINSTANCENAME="DUAL" PIPELINE="0" ISREPARTITIONPOINT="NO"/>
+            <SESSTRANSFORMATIONINST TRANSFORMATIONTYPE="Filter" TRANSFORMATIONNAME="FIL_DUMMY" STAGE="2" SINSTANCENAME="FIL_DUMMY" PIPELINE="1" ISREPARTITIONPOINT="NO">
+                <PARTITION NAME="Partition #1" DESCRIPTION=""/>
+            </SESSTRANSFORMATIONINST>
+            <CONFIGREFERENCE TYPE="Session config" REFOBJECTNAME="default_session_config"/>
+            <SESSIONCOMPONENT TYPE="Pre-session variable assignment" REUSABLE="NO" REFOBJECTNAME="presession_variable_assignment">
+                <TASK VERSIONNUMBER="1" TYPE="Command" REUSABLE="NO" NAME="presession_variable_assignment" DESCRIPTION="">
+                    <ATTRIBUTE VALUE="NO" NAME="Fail task if any command fails"/>
+                    <ATTRIBUTE VALUE="Fail task and continue workflow" NAME="Recovery Strategy"/>
+                </TASK>
+            </SESSIONCOMPONENT>
+            <SESSIONCOMPONENT TYPE="Post-session success variable assignment" REUSABLE="NO" REFOBJECTNAME="postsession_success_variable_assignment">
+                <TASK VERSIONNUMBER="1" TYPE="Command" REUSABLE="NO" NAME="postsession_success_variable_assignment" DESCRIPTION="">
+                    <ATTRIBUTE VALUE="NO" NAME="Fail task if any command fails"/>
+                    <ATTRIBUTE VALUE="Fail task and continue workflow" NAME="Recovery Strategy"/>
+                </TASK>
+            </SESSIONCOMPONENT>
+            <SESSIONCOMPONENT TYPE="Post-session failure variable assignment" REUSABLE="NO" REFOBJECTNAME="postsession_failure_variable_assignment">
+                <TASK VERSIONNUMBER="1" TYPE="Command" REUSABLE="NO" NAME="postsession_failure_variable_assignment" DESCRIPTION="">
+                    <ATTRIBUTE VALUE="NO" NAME="Fail task if any command fails"/>
+                    <ATTRIBUTE VALUE="Fail task and continue workflow" NAME="Recovery Strategy"/>
+                </TASK>
+            </SESSIONCOMPONENT>
+            <SESSIONEXTENSION TYPE="WRITER" TRANSFORMATIONTYPE="Target Definition" SUBTYPE="Relational Writer" SINSTANCENAME="DUAL1" NAME="Relational Writer">
+                <CONNECTIONREFERENCE VARIABLE="" CONNECTIONTYPE="Relational" CONNECTIONSUBTYPE="Oracle" CONNECTIONNUMBER="1" CONNECTIONNAME="EDW_ETL" CNXREFNAME="DB Connection"/>
+                <ATTRIBUTE VALUE="Bulk" NAME="Target load type"/>
+                <ATTRIBUTE VALUE="YES" NAME="Insert"/>
+                <ATTRIBUTE VALUE="YES" NAME="Update as Update"/>
+                <ATTRIBUTE VALUE="NO" NAME="Update as Insert"/>
+                <ATTRIBUTE VALUE="NO" NAME="Update else Insert"/>
+                <ATTRIBUTE VALUE="YES" NAME="Delete"/>
+                <ATTRIBUTE VALUE="NO" NAME="Truncate target table option"/>
+                <ATTRIBUTE VALUE="$PMBadFileDir\" NAME="Reject file directory"/>
+                <ATTRIBUTE VALUE="dual11.bad" NAME="Reject filename"/>
+            </SESSIONEXTENSION>
+            <SESSIONEXTENSION TYPE="READER" TRANSFORMATIONTYPE="Source Qualifier" SUBTYPE="Relational Reader" SINSTANCENAME="SQ_DUAL" NAME="Relational Reader">
+                <CONNECTIONREFERENCE CNXREFNAME="DB Connection" CONNECTIONNAME="EDW_ETL_PROD" CONNECTIONNUMBER="1" CONNECTIONSUBTYPE="Oracle" CONNECTIONTYPE="Relational" VARIABLE=""/>
+            </SESSIONEXTENSION>
+            <SESSIONEXTENSION TYPE="READER" TRANSFORMATIONTYPE="Source Definition" SUBTYPE="Relational Reader" SINSTANCENAME="DUAL" NAME="Relational Reader" DSQINSTTYPE="Source Qualifier" DSQINSTNAME="SQ_DUAL"/>
+            <ATTRIBUTE VALUE="" NAME="General Options"/>
+            <ATTRIBUTE VALUE="NO" NAME="Write Backward Compatible Session Log File"/>
+            <ATTRIBUTE VALUE="s_IDMAP_PREDDS_001_NPERS_ESTATE.log" NAME="Session Log File Name"/>
+            <ATTRIBUTE VALUE="$PMSessionLogDir\" NAME="Session Log File directory"/>
+            <ATTRIBUTE VALUE="" NAME="Parameter Filename"/>
+            <ATTRIBUTE VALUE="NO" NAME="Enable Test Load"/>
+            <ATTRIBUTE VALUE="" NAME="$Source connection value"/>
+            <ATTRIBUTE VALUE="" NAME="$Target connection value"/>
+            <ATTRIBUTE VALUE="Insert" NAME="Treat source rows as"/>
+            <ATTRIBUTE VALUE="Target" NAME="Commit Type"/>
+            <ATTRIBUTE VALUE="10000000" NAME="Commit Interval"/>
+            <ATTRIBUTE VALUE="YES" NAME="Commit On End Of File"/>
+            <ATTRIBUTE VALUE="NO" NAME="Rollback Transactions on Errors"/>
+            <ATTRIBUTE VALUE="Fail task and continue workflow" NAME="Recovery Strategy"/>
+            <ATTRIBUTE VALUE="" NAME="Java Classpath"/>
+            <ATTRIBUTE VALUE="" NAME="Performance"/>
+            <ATTRIBUTE VALUE="Auto" NAME="DTM buffer size"/>
+            <ATTRIBUTE VALUE="NO" NAME="Collect performance data"/>
+            <ATTRIBUTE VALUE="NO" NAME="Write performance data to repository"/>
+            <ATTRIBUTE VALUE="NO" NAME="Incremental Aggregation"/>
+            <ATTRIBUTE VALUE="NO" NAME="Enable high precision"/>
+            <ATTRIBUTE VALUE="NO" NAME="Session retry on deadlock"/>
+            <ATTRIBUTE VALUE="None" NAME="Pushdown Optimization"/>
+            <ATTRIBUTE VALUE="NO" NAME="Allow Temporary View for Pushdown"/>
+            <ATTRIBUTE VALUE="NO" NAME="Allow Temporary Sequence for Pushdown"/>
+            <ATTRIBUTE VALUE="NO" NAME="Allow Pushdown for User Incompatible Connections"/>
+            <METADATAEXTENSION VENDORNAME="INFORMATICA" VALUE="" NAME="Author" MAXLENGTH="256" ISSHAREWRITE="NO" ISSHAREREAD="NO" ISREUSABLE="YES" ISCLIENTVISIBLE="YES" ISCLIENTEDITABLE="YES" DOMAINNAME="User Defined Metadata Domain" DESCRIPTION="Разработчик создавший объект" DATATYPE="STRING"/>
+            <METADATAEXTENSION VENDORNAME="INFORMATICA" VALUE="" NAME="Creation Date" MAXLENGTH="10" ISSHAREWRITE="NO" ISSHAREREAD="NO" ISREUSABLE="YES" ISCLIENTVISIBLE="YES" ISCLIENTEDITABLE="YES" DOMAINNAME="User Defined Metadata Domain" DESCRIPTION="Дата создания\последнего обновления объекта
+в формате DD\MM\YYYY" DATATYPE="STRING"/>
+            <METADATAEXTENSION VENDORNAME="INFORMATICA" VALUE="" NAME="Doc Link" MAXLENGTH="256" ISSHAREWRITE="NO" ISSHAREREAD="NO" ISREUSABLE="YES" ISCLIENTVISIBLE="YES" ISCLIENTEDITABLE="YES" DOMAINNAME="User Defined Metadata Domain" DESCRIPTION="Ссылка изи название документа в котором описаны свойства соответвующего объекта" DATATYPE="STRING"/>
+            <METADATAEXTENSION VENDORNAME="INFORMATICA" VALUE="" NAME="GIT Info" MAXLENGTH="256" ISSHAREWRITE="NO" ISSHAREREAD="NO" ISREUSABLE="YES" ISCLIENTVISIBLE="YES" ISCLIENTEDITABLE="YES" DOMAINNAME="User Defined Metadata Domain" DESCRIPTION="Информация из Git репозитория: Branch, Tag, Commit" DATATYPE="STRING"/>
+        </SESSION>
+        <TASKINSTANCE TREAT_INPUTLINK_AS_AND="YES" TASKTYPE="Session" TASKNAME="s_PREDDS_001_COUNTERP_NPERS_ESTATE" REUSABLE="NO" NAME="s_PREDDS_001_COUNTERP_NPERS_ESTATE" ISENABLED="YES" FAIL_PARENT_IF_INSTANCE_FAILS="YES" FAIL_PARENT_IF_INSTANCE_DID_NOT_RUN="NO" DESCRIPTION=""/>
+        <TASKINSTANCE TREAT_INPUTLINK_AS_AND="YES" TASKTYPE="Command" TASKNAME="cmd_ETLFW_FINISH_JOB" REUSABLE="YES" NAME="cmd_ETLFW_FINISH_JOB_wf_PREDDS_001_COUNTERP_NPERS_ESTATE" ISENABLED="YES" FAIL_PARENT_IF_INSTANCE_FAILS="YES" FAIL_PARENT_IF_INSTANCE_DID_NOT_RUN="NO" DESCRIPTION=""/>
+        <TASKINSTANCE TREAT_INPUTLINK_AS_AND="YES" TASKTYPE="Command" TASKNAME="cmd_ETLFW_START_JOB" REUSABLE="YES" NAME="cmd_ETLFW_START_JOB_wf_PREDDS_001_COUNTERP_NPERS_ESTATE" ISENABLED="YES" FAIL_PARENT_IF_INSTANCE_FAILS="YES" FAIL_PARENT_IF_INSTANCE_DID_NOT_RUN="NO" DESCRIPTION="">
+            <VALUEPAIR VALUE=" python /home/etl/etlfw/startjob.py  $PMFolderName $PMWorkflowName $PMRootDir/ParamFiles/EDW_PREDDS_001.wf_PREDDS_001_COUNTERP_NPERS_ESTATE.prm $PMWorkflowRunId" REVERSEASSIGNMENT="NO" NAME="ETLFW Start Job wf_STG_CDC_002_ACNT_CONTRACT" EXECORDER="1"/>
+        </TASKINSTANCE>
+        <TASKINSTANCE TASKTYPE="Start" TASKNAME="Start" REUSABLE="NO" NAME="Start" ISENABLED="YES" DESCRIPTION=""/>
+        <TASKINSTANCE TREAT_INPUTLINK_AS_AND="YES" TASKTYPE="Session" TASKNAME="s_IDMAP_PREDDS_001_NPERS_ESTATE" REUSABLE="NO" NAME="s_IDMAP_PREDDS_001_NPERS_ESTATE" ISENABLED="YES" FAIL_PARENT_IF_INSTANCE_FAILS="NO" FAIL_PARENT_IF_INSTANCE_DID_NOT_RUN="NO" DESCRIPTION=""/>
+        <WORKFLOWLINK TOTASK="s_PREDDS_001_COUNTERP_NPERS_ESTATE" FROMTASK="cmd_ETLFW_START_JOB_wf_PREDDS_001_COUNTERP_NPERS_ESTATE" CONDITION="$cmd_ETLFW_START_JOB_wf_PREDDS_001_COUNTERP_NPERS_ESTATE.ErrorCode=0"/>
+        <WORKFLOWLINK TOTASK="cmd_ETLFW_FINISH_JOB_wf_PREDDS_001_COUNTERP_NPERS_ESTATE" FROMTASK="s_PREDDS_001_COUNTERP_NPERS_ESTATE" CONDITION="$s_PREDDS_001_COUNTERP_NPERS_ESTATE.ErrorCode=0"/>
+        <WORKFLOWLINK TOTASK="cmd_ETLFW_START_JOB_wf_PREDDS_001_COUNTERP_NPERS_ESTATE" FROMTASK="Start" CONDITION=""/>
+        <WORKFLOWVARIABLE USERDEFINED="NO" NAME="$s_PREDDS_001_COUNTERP_NPERS_ESTATE.StartTime" ISPERSISTENT="NO" ISNULL="NO" DESCRIPTION="The time this task started" DEFAULTVALUE="" DATATYPE="date/time"/>
+        <WORKFLOWVARIABLE USERDEFINED="NO" NAME="$s_PREDDS_001_COUNTERP_NPERS_ESTATE.EndTime" ISPERSISTENT="NO" ISNULL="NO" DESCRIPTION="The time this task completed" DEFAULTVALUE="" DATATYPE="date/time"/>
+        <WORKFLOWVARIABLE USERDEFINED="NO" NAME="$s_PREDDS_001_COUNTERP_NPERS_ESTATE.Status" ISPERSISTENT="NO" ISNULL="NO" DESCRIPTION="Status of this task's execution" DEFAULTVALUE="" DATATYPE="integer"/>
+        <WORKFLOWVARIABLE USERDEFINED="NO" NAME="$s_PREDDS_001_COUNTERP_NPERS_ESTATE.PrevTaskStatus" ISPERSISTENT="NO" ISNULL="NO" DESCRIPTION="Status of the previous task that is not disabled" DEFAULTVALUE="" DATATYPE="integer"/>
+        <WORKFLOWVARIABLE USERDEFINED="NO" NAME="$s_PREDDS_001_COUNTERP_NPERS_ESTATE.ErrorCode" ISPERSISTENT="NO" ISNULL="NO" DESCRIPTION="Error code for this task's execution" DEFAULTVALUE="" DATATYPE="integer"/>
+        <WORKFLOWVARIABLE USERDEFINED="NO" NAME="$s_PREDDS_001_COUNTERP_NPERS_ESTATE.ErrorMsg" ISPERSISTENT="NO" ISNULL="NO" DESCRIPTION="Error message for this task's execution" DEFAULTVALUE="" DATATYPE="string"/>
+        <WORKFLOWVARIABLE USERDEFINED="NO" NAME="$s_PREDDS_001_COUNTERP_NPERS_ESTATE.SrcSuccessRows" ISPERSISTENT="NO" ISNULL="NO" DESCRIPTION="Rows successfully read" DEFAULTVALUE="" DATATYPE="integer"/>
+        <WORKFLOWVARIABLE USERDEFINED="NO" NAME="$s_PREDDS_001_COUNTERP_NPERS_ESTATE.SrcFailedRows" ISPERSISTENT="NO" ISNULL="NO" DESCRIPTION="Rows failed to read" DEFAULTVALUE="" DATATYPE="integer"/>
+        <WORKFLOWVARIABLE USERDEFINED="NO" NAME="$s_PREDDS_001_COUNTERP_NPERS_ESTATE.TgtSuccessRows" ISPERSISTENT="NO" ISNULL="NO" DESCRIPTION="Rows successfully loaded" DEFAULTVALUE="" DATATYPE="integer"/>
+        <WORKFLOWVARIABLE USERDEFINED="NO" NAME="$s_PREDDS_001_COUNTERP_NPERS_ESTATE.TgtFailedRows" ISPERSISTENT="NO" ISNULL="NO" DESCRIPTION="Rows failed to load" DEFAULTVALUE="" DATATYPE="integer"/>
+        <WORKFLOWVARIABLE USERDEFINED="NO" NAME="$s_PREDDS_001_COUNTERP_NPERS_ESTATE.TotalTransErrors" ISPERSISTENT="NO" ISNULL="NO" DESCRIPTION="Total number of transformation errors" DEFAULTVALUE="" DATATYPE="integer"/>
+        <WORKFLOWVARIABLE USERDEFINED="NO" NAME="$s_PREDDS_001_COUNTERP_NPERS_ESTATE.FirstErrorCode" ISPERSISTENT="NO" ISNULL="NO" DESCRIPTION="First error code" DEFAULTVALUE="" DATATYPE="integer"/>
+        <WORKFLOWVARIABLE USERDEFINED="NO" NAME="$s_PREDDS_001_COUNTERP_NPERS_ESTATE.FirstErrorMsg" ISPERSISTENT="NO" ISNULL="NO" DESCRIPTION="First error message" DEFAULTVALUE="" DATATYPE="string"/>
+        <WORKFLOWVARIABLE USERDEFINED="NO" NAME="$cmd_ETLFW_FINISH_JOB_wf_PREDDS_001_COUNTERP_NPERS_ESTATE.StartTime" ISPERSISTENT="NO" ISNULL="NO" DESCRIPTION="The time this task started" DEFAULTVALUE="" DATATYPE="date/time"/>
+        <WORKFLOWVARIABLE USERDEFINED="NO" NAME="$cmd_ETLFW_FINISH_JOB_wf_PREDDS_001_COUNTERP_NPERS_ESTATE.EndTime" ISPERSISTENT="NO" ISNULL="NO" DESCRIPTION="The time this task completed" DEFAULTVALUE="" DATATYPE="date/time"/>
+        <WORKFLOWVARIABLE USERDEFINED="NO" NAME="$cmd_ETLFW_FINISH_JOB_wf_PREDDS_001_COUNTERP_NPERS_ESTATE.Status" ISPERSISTENT="NO" ISNULL="NO" DESCRIPTION="Status of this task's execution" DEFAULTVALUE="" DATATYPE="integer"/>
+        <WORKFLOWVARIABLE USERDEFINED="NO" NAME="$cmd_ETLFW_FINISH_JOB_wf_PREDDS_001_COUNTERP_NPERS_ESTATE.PrevTaskStatus" ISPERSISTENT="NO" ISNULL="NO" DESCRIPTION="Status of the previous task that is not disabled" DEFAULTVALUE="" DATATYPE="integer"/>
+        <WORKFLOWVARIABLE USERDEFINED="NO" NAME="$cmd_ETLFW_FINISH_JOB_wf_PREDDS_001_COUNTERP_NPERS_ESTATE.ErrorCode" ISPERSISTENT="NO" ISNULL="NO" DESCRIPTION="Error code for this task's execution" DEFAULTVALUE="" DATATYPE="integer"/>
+        <WORKFLOWVARIABLE USERDEFINED="NO" NAME="$cmd_ETLFW_FINISH_JOB_wf_PREDDS_001_COUNTERP_NPERS_ESTATE.ErrorMsg" ISPERSISTENT="NO" ISNULL="NO" DESCRIPTION="Error message for this task's execution" DEFAULTVALUE="" DATATYPE="string"/>
+        <WORKFLOWVARIABLE USERDEFINED="NO" NAME="$cmd_ETLFW_START_JOB_wf_PREDDS_001_COUNTERP_NPERS_ESTATE.StartTime" ISPERSISTENT="NO" ISNULL="NO" DESCRIPTION="The time this task started" DEFAULTVALUE="" DATATYPE="date/time"/>
+        <WORKFLOWVARIABLE USERDEFINED="NO" NAME="$cmd_ETLFW_START_JOB_wf_PREDDS_001_COUNTERP_NPERS_ESTATE.EndTime" ISPERSISTENT="NO" ISNULL="NO" DESCRIPTION="The time this task completed" DEFAULTVALUE="" DATATYPE="date/time"/>
+        <WORKFLOWVARIABLE USERDEFINED="NO" NAME="$cmd_ETLFW_START_JOB_wf_PREDDS_001_COUNTERP_NPERS_ESTATE.Status" ISPERSISTENT="NO" ISNULL="NO" DESCRIPTION="Status of this task's execution" DEFAULTVALUE="" DATATYPE="integer"/>
+        <WORKFLOWVARIABLE USERDEFINED="NO" NAME="$cmd_ETLFW_START_JOB_wf_PREDDS_001_COUNTERP_NPERS_ESTATE.PrevTaskStatus" ISPERSISTENT="NO" ISNULL="NO" DESCRIPTION="Status of the previous task that is not disabled" DEFAULTVALUE="" DATATYPE="integer"/>
+        <WORKFLOWVARIABLE USERDEFINED="NO" NAME="$cmd_ETLFW_START_JOB_wf_PREDDS_001_COUNTERP_NPERS_ESTATE.ErrorCode" ISPERSISTENT="NO" ISNULL="NO" DESCRIPTION="Error code for this task's execution" DEFAULTVALUE="" DATATYPE="integer"/>
+        <WORKFLOWVARIABLE USERDEFINED="NO" NAME="$cmd_ETLFW_START_JOB_wf_PREDDS_001_COUNTERP_NPERS_ESTATE.ErrorMsg" ISPERSISTENT="NO" ISNULL="NO" DESCRIPTION="Error message for this task's execution" DEFAULTVALUE="" DATATYPE="string"/>
+        <WORKFLOWVARIABLE USERDEFINED="NO" NAME="$Start.StartTime" ISPERSISTENT="NO" ISNULL="NO" DESCRIPTION="The time this task started" DEFAULTVALUE="" DATATYPE="date/time"/>
+        <WORKFLOWVARIABLE USERDEFINED="NO" NAME="$Start.EndTime" ISPERSISTENT="NO" ISNULL="NO" DESCRIPTION="The time this task completed" DEFAULTVALUE="" DATATYPE="date/time"/>
+        <WORKFLOWVARIABLE USERDEFINED="NO" NAME="$Start.Status" ISPERSISTENT="NO" ISNULL="NO" DESCRIPTION="Status of this task's execution" DEFAULTVALUE="" DATATYPE="integer"/>
+        <WORKFLOWVARIABLE USERDEFINED="NO" NAME="$Start.PrevTaskStatus" ISPERSISTENT="NO" ISNULL="NO" DESCRIPTION="Status of the previous task that is not disabled" DEFAULTVALUE="" DATATYPE="integer"/>
+        <WORKFLOWVARIABLE USERDEFINED="NO" NAME="$Start.ErrorCode" ISPERSISTENT="NO" ISNULL="NO" DESCRIPTION="Error code for this task's execution" DEFAULTVALUE="" DATATYPE="integer"/>
+        <WORKFLOWVARIABLE USERDEFINED="NO" NAME="$Start.ErrorMsg" ISPERSISTENT="NO" ISNULL="NO" DESCRIPTION="Error message for this task's execution" DEFAULTVALUE="" DATATYPE="string"/>
+        <WORKFLOWVARIABLE USERDEFINED="NO" NAME="$s_IDMAP_PREDDS_001_NPERS_ESTATE.StartTime" ISPERSISTENT="NO" ISNULL="NO" DESCRIPTION="The time this task started" DEFAULTVALUE="" DATATYPE="date/time"/>
+        <WORKFLOWVARIABLE USERDEFINED="NO" NAME="$s_IDMAP_PREDDS_001_NPERS_ESTATE.EndTime" ISPERSISTENT="NO" ISNULL="NO" DESCRIPTION="The time this task completed" DEFAULTVALUE="" DATATYPE="date/time"/>
+        <WORKFLOWVARIABLE USERDEFINED="NO" NAME="$s_IDMAP_PREDDS_001_NPERS_ESTATE.Status" ISPERSISTENT="NO" ISNULL="NO" DESCRIPTION="Status of this task's execution" DEFAULTVALUE="" DATATYPE="integer"/>
+        <WORKFLOWVARIABLE USERDEFINED="NO" NAME="$s_IDMAP_PREDDS_001_NPERS_ESTATE.PrevTaskStatus" ISPERSISTENT="NO" ISNULL="NO" DESCRIPTION="Status of the previous task that is not disabled" DEFAULTVALUE="" DATATYPE="integer"/>
+        <WORKFLOWVARIABLE USERDEFINED="NO" NAME="$s_IDMAP_PREDDS_001_NPERS_ESTATE.ErrorCode" ISPERSISTENT="NO" ISNULL="NO" DESCRIPTION="Error code for this task's execution" DEFAULTVALUE="" DATATYPE="integer"/>
+        <WORKFLOWVARIABLE USERDEFINED="NO" NAME="$s_IDMAP_PREDDS_001_NPERS_ESTATE.ErrorMsg" ISPERSISTENT="NO" ISNULL="NO" DESCRIPTION="Error message for this task's execution" DEFAULTVALUE="" DATATYPE="string"/>
+        <WORKFLOWVARIABLE USERDEFINED="NO" NAME="$s_IDMAP_PREDDS_001_NPERS_ESTATE.SrcSuccessRows" ISPERSISTENT="NO" ISNULL="NO" DESCRIPTION="Rows successfully read" DEFAULTVALUE="" DATATYPE="integer"/>
+        <WORKFLOWVARIABLE USERDEFINED="NO" NAME="$s_IDMAP_PREDDS_001_NPERS_ESTATE.SrcFailedRows" ISPERSISTENT="NO" ISNULL="NO" DESCRIPTION="Rows failed to read" DEFAULTVALUE="" DATATYPE="integer"/>
+        <WORKFLOWVARIABLE USERDEFINED="NO" NAME="$s_IDMAP_PREDDS_001_NPERS_ESTATE.TgtSuccessRows" ISPERSISTENT="NO" ISNULL="NO" DESCRIPTION="Rows successfully loaded" DEFAULTVALUE="" DATATYPE="integer"/>
+        <WORKFLOWVARIABLE USERDEFINED="NO" NAME="$s_IDMAP_PREDDS_001_NPERS_ESTATE.TgtFailedRows" ISPERSISTENT="NO" ISNULL="NO" DESCRIPTION="Rows failed to load" DEFAULTVALUE="" DATATYPE="integer"/>
+        <WORKFLOWVARIABLE USERDEFINED="NO" NAME="$s_IDMAP_PREDDS_001_NPERS_ESTATE.TotalTransErrors" ISPERSISTENT="NO" ISNULL="NO" DESCRIPTION="Total number of transformation errors" DEFAULTVALUE="" DATATYPE="integer"/>
+        <WORKFLOWVARIABLE USERDEFINED="NO" NAME="$s_IDMAP_PREDDS_001_NPERS_ESTATE.FirstErrorCode" ISPERSISTENT="NO" ISNULL="NO" DESCRIPTION="First error code" DEFAULTVALUE="" DATATYPE="integer"/>
+        <WORKFLOWVARIABLE USERDEFINED="NO" NAME="$s_IDMAP_PREDDS_001_NPERS_ESTATE.FirstErrorMsg" ISPERSISTENT="NO" ISNULL="NO" DESCRIPTION="First error message" DEFAULTVALUE="" DATATYPE="string"/>
+        <WORKFLOWVARIABLE USERDEFINED="YES" NAME="$$wvEffectiveFrom" ISPERSISTENT="NO" ISNULL="NO" DESCRIPTION="" DEFAULTVALUE="" DATATYPE="date/time"/>
+        <WORKFLOWVARIABLE USERDEFINED="YES" NAME="$$wvEffectiveTo" ISPERSISTENT="NO" ISNULL="NO" DESCRIPTION="" DEFAULTVALUE="" DATATYPE="date/time"/>
+        <WORKFLOWVARIABLE USERDEFINED="YES" NAME="$$wvDWHJobID" ISPERSISTENT="NO" ISNULL="NO" DESCRIPTION="" DEFAULTVALUE="" DATATYPE="integer"/>
+        <ATTRIBUTE VALUE="" NAME="Parameter Filename"/>
+        <ATTRIBUTE VALUE="NO" NAME="Write Backward Compatible Workflow Log File"/>
+        <ATTRIBUTE VALUE="wf_PREDDS_001_COUNTERP_NPERS_REAL_ESTATE.log" NAME="Workflow Log File Name"/>
+        <ATTRIBUTE VALUE="$PMWorkflowLogDir\" NAME="Workflow Log File Directory"/>
+        <ATTRIBUTE VALUE="By runs" NAME="Save Workflow log by"/>
+        <ATTRIBUTE VALUE="0" NAME="Save workflow log for these runs"/>
+        <ATTRIBUTE VALUE="" NAME="Service Name"/>
+        <ATTRIBUTE VALUE="0" NAME="Service Timeout"/>
+        <ATTRIBUTE VALUE="NO" NAME="Is Service Visible"/>
+        <ATTRIBUTE VALUE="NO" NAME="Is Service Protected"/>
+        <ATTRIBUTE VALUE="0" NAME="Fail task after wait time"/>
+        <ATTRIBUTE VALUE="NO" NAME="Enable HA recovery"/>
+        <ATTRIBUTE VALUE="NO" NAME="Automatically recover terminated tasks"/>
+        <ATTRIBUTE VALUE="Default" NAME="Service Level Name"/>
+        <ATTRIBUTE VALUE="NO" NAME="Allow concurrent run with unique run instance name"/>
+        <ATTRIBUTE VALUE="NO" NAME="Allow concurrent run with same run instance name"/>
+        <ATTRIBUTE VALUE="0" NAME="Maximum number of concurrent runs"/>
+        <ATTRIBUTE VALUE="" NAME="Assigned Web Services Hubs"/>
+        <ATTRIBUTE VALUE="1000" NAME="Maximum number of concurrent runs per Hub"/>
+        <ATTRIBUTE VALUE="1" NAME="Expected Service Time"/>
+        <METADATAEXTENSION VENDORNAME="INFORMATICA" VALUE="" NAME="Author" MAXLENGTH="256" ISSHAREWRITE="NO" ISSHAREREAD="NO" ISREUSABLE="YES" ISCLIENTVISIBLE="YES" ISCLIENTEDITABLE="YES" DOMAINNAME="User Defined Metadata Domain" DESCRIPTION="Разработчик создавший объект" DATATYPE="STRING"/>
+        <METADATAEXTENSION VENDORNAME="INFORMATICA" VALUE="" NAME="Creation Date" MAXLENGTH="10" ISSHAREWRITE="NO" ISSHAREREAD="NO" ISREUSABLE="YES" ISCLIENTVISIBLE="YES" ISCLIENTEDITABLE="YES" DOMAINNAME="User Defined Metadata Domain" DESCRIPTION="Дата создания\последнего обновления объекта
+в формате DD\MM\YYYY" DATATYPE="STRING"/>
+        <METADATAEXTENSION VENDORNAME="INFORMATICA" VALUE="" NAME="Doc Link" MAXLENGTH="256" ISSHAREWRITE="NO" ISSHAREREAD="NO" ISREUSABLE="YES" ISCLIENTVISIBLE="YES" ISCLIENTEDITABLE="YES" DOMAINNAME="User Defined Metadata Domain" DESCRIPTION="Ссылка изи название документа в котором описаны свойства соответвующего объекта" DATATYPE="STRING"/>
+        <METADATAEXTENSION VENDORNAME="INFORMATICA" VALUE="" NAME="GIT Info" MAXLENGTH="256" ISSHAREWRITE="NO" ISSHAREREAD="NO" ISREUSABLE="YES" ISCLIENTVISIBLE="YES" ISCLIENTEDITABLE="YES" DOMAINNAME="User Defined Metadata Domain" DESCRIPTION="Информация из Git репозитория: Branch, Tag, Commit" DATATYPE="STRING"/>
+        <METADATAEXTENSION VENDORNAME="INFORMATICA" VALUE="" NAME="Recover Type" MAXLENGTH="256" ISSHAREWRITE="NO" ISSHAREREAD="NO" ISREUSABLE="YES" ISCLIENTVISIBLE="YES" ISCLIENTEDITABLE="YES" DOMAINNAME="User Defined Metadata Domain" DESCRIPTION="Тип\Способ востановления упавшего процесса" DATATYPE="NUMERIC"/>
+        <METADATAEXTENSION VENDORNAME="INFORMATICA" VALUE="" NAME="Source Tables" MAXLENGTH="4096" ISSHAREWRITE="NO" ISSHAREREAD="NO" ISREUSABLE="YES" ISCLIENTVISIBLE="YES" ISCLIENTEDITABLE="YES" DOMAINNAME="User Defined Metadata Domain" DESCRIPTION="Список таблиц которые читает процесс.
+Разеделены через запятую" DATATYPE="STRING"/>
+        <METADATAEXTENSION VENDORNAME="INFORMATICA" VALUE="" NAME="Target Tables" MAXLENGTH="4096" ISSHAREWRITE="NO" ISSHAREREAD="NO" ISREUSABLE="YES" ISCLIENTVISIBLE="YES" ISCLIENTEDITABLE="YES" DOMAINNAME="User Defined Metadata Domain" DESCRIPTION="Список таблиц которые пишет процесс
+Разделены через запятую" DATATYPE="STRING"/>
+    </WORKFLOW>
+</FOLDER>
+</REPOSITORY>
+</POWERMART>

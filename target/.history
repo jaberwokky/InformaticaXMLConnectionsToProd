@@ -1,0 +1,77 @@
+project SampleProject
+run
+)
+println("dsa")
+project SampleProject
+test
+project SampleProject
+test
+project SampleProject
+run
+project SampleProject
+run
+project SampleProject
+run
+project SampleProject
+run
+project SampleProject
+run
+project SampleProject
+test
+project SampleProject
+test
+project SampleProject
+test
+project SampleProject
+run
+project SampleProject
+run
+project SampleProject
+run
+project SampleProject
+run
+project SampleProject
+run
+project SampleProject
+run
+project SampleProject
+compile
+project SampleProject
+compile
+project SampleProject
+run
+project SampleProject
+run
+project SampleProject
+compile
+project SampleProject
+compile
+project SampleProject
+compile
+project SampleProject
+compile
+project SampleProject
+compile
+project SampleProject
+compile
+project SampleProject
+compile
+project SampleProject
+compile
+project SampleProject
+clean
+compile
+assembly
+project SampleProject
+clean
+compile
+assembly
+project SampleProject
+clean
+compile
+project SampleProject
+clean
+compile
+project SampleProject
+clean
+compile
