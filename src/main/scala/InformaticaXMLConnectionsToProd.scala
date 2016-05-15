@@ -17,6 +17,7 @@ object InformaticaXMLConnectionsToProd {
    * @param args the command line arguments
    */
   def main(args: Array[String]): Unit = {
+    
     val f = javax.xml.parsers.SAXParserFactory.newInstance()
 
     f.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false)
@@ -55,11 +56,13 @@ object InformaticaXMLConnectionsToProd {
     def mapMetaData(m: MetaData)(f: GenAttr => GenAttr): MetaData =
       chainMetaData(unchainMetaData(m).map(f))
 
-    val procs = ((xml \\ "SESSTRANSFORMATIONINST" \\ "@TRANSFORMATIONNAME") zip (xml \\ "SESSTRANSFORMATIONINST" \\ "@TRANSFORMATIONTYPE")).filter(_._2.text.contains("Stored"))
+    val procs = ((xml \\ "SESSTRANSFORMATIONINST" \\ "@TRANSFORMATIONNAME")
+                 zip (xml \\ "SESSTRANSFORMATIONINST" \\ "@TRANSFORMATIONTYPE"))
+      filter(_._2.text.contains("Stored"))
 
     val procsNames = procs map (_._1)
 
-    val procsNamesE = procsNames.map(_.text.split('.')(0).split('_').drop(1).reduce((x, y) => x + '_' + y))
+    val procsNamesE = procsNames map(_.text.split('.')(0).split('_').drop(1).reduce((x, y) => x + '_' + y))
 
     object SeestEditAttrs extends RewriteRule {
       override def transform(n: Node): Seq[Node] = n match {
@@ -91,7 +94,8 @@ object InformaticaXMLConnectionsToProd {
 
     object SesstEdit extends RewriteRule {
       override def transform(n: Node): Seq[Node] = n match {
-        case fn @ Elem(prefix, "ATTRIBUTE", attribs, scope, _*) if attribs.asAttrMap("NAME") == "Connection Information" => RuleSesstEditAttrs(fn)
+        case fn @ Elem(prefix, "ATTRIBUTE", attribs, scope, _*) 
+          if attribs.asAttrMap("NAME") == "Connection Information" => RuleSesstEditAttrs(fn)
         case other => other
       }
     }
@@ -144,7 +148,10 @@ object InformaticaXMLConnectionsToProd {
 
     val newXml = RuleMainConnectionTransoform(xml)
 
-    val ddd = new scala.xml.dtd.DocType("POWERMART", scala.xml.dtd.SystemID("powrmart.dtd"), Nil)
+    val ddd = new scala.xml.dtd.DocType("POWERMART",
+                                        scala.xml.dtd.SystemID("powrmart.dtd"),
+                                        Nil)
+    
     scala.xml.XML.save("testxmld.xml", newXml, "windows-1251", true, ddd)
 
     var listOfTables:List[String] = List()
@@ -155,21 +162,31 @@ object InformaticaXMLConnectionsToProd {
       case e: Exception => {}
     }
     
-    val procsLookup = ((xml \\ "SESSTRANSFORMATIONINST" \\ "@TRANSFORMATIONNAME") zip (xml \\ "SESSTRANSFORMATIONINST" \\ "@TRANSFORMATIONTYPE")).filter(_._2.text.contains("Lookup"))
+    val procsLookup = ((xml \\ "SESSTRANSFORMATIONINST" \\ "@TRANSFORMATIONNAME")
+                       zip (xml \\ "SESSTRANSFORMATIONINST" \\ "@TRANSFORMATIONTYPE"))
+      filter(_._2.text.contains("Lookup"))
 
     val procsLookupNames = procsLookup map (_._1)
     
-    val procsStored = ((xml \\ "SESSTRANSFORMATIONINST" \\ "@TRANSFORMATIONNAME") zip (xml \\ "SESSTRANSFORMATIONINST" \\ "@TRANSFORMATIONTYPE")).filter(_._2.text.contains("Stored"))
+    val procsStored = ((xml \\ "SESSTRANSFORMATIONINST" \\ "@TRANSFORMATIONNAME")
+                       zip (xml \\ "SESSTRANSFORMATIONINST" \\ "@TRANSFORMATIONTYPE")) 
+      filter(_._2.text.contains("Stored"))
     
     val procsStoredNames = procsStored map (_._1)
     
-    val tableNames = procsLookupNames.filter(x => procsStoredNames.map(_.text.split('.')(0)).contains(x.text.split('.')(0))).map(_.text.split('.')(1).split('_').drop(1).reduce((x,y)=>x+'_'+y)).distinct.map(_.replaceFirst("_","."))
+    val tableNames = procsLookupNames 
+      filter(x => procsStoredNames map(_.text.split('.')(0)).contains(x.text.split('.')(0))) 
+      map(_.text.split('.')(1).split('_').drop(1) reduce((x,y)=>x+'_'+y))
+      distinct
+      map(_.replaceFirst("_","."))
     
     val file = new File("listOfTablesToCopyFromProd")
 
     val bw = new BufferedWriter(new FileWriter(file, true))
 
-    tableNames.filter(!listOfTables.contains(_)).map(st => bw.write(st + "\n"))
+    tableNames.filter(
+      !listOfTables.contains(_)).map(
+      st => bw.write(st + "\n"))
     
     bw.close()
   }
