@@ -24,8 +24,6 @@ object InformaticaXMLConnectionsToProd {
 
     val p = f.newSAXParser()
 
-    args map println
-
     val xml = scala.xml.XML.withSAXParser(p).load(args(0))
 
     case class GenAttr(
@@ -57,12 +55,12 @@ object InformaticaXMLConnectionsToProd {
       chainMetaData(unchainMetaData(m).map(f))
 
     val procs = ((xml \\ "SESSTRANSFORMATIONINST" \\ "@TRANSFORMATIONNAME")
-                 zip (xml \\ "SESSTRANSFORMATIONINST" \\ "@TRANSFORMATIONTYPE"))
-      filter(_._2.text.contains("Stored"))
+                 .zip(xml \\ "SESSTRANSFORMATIONINST" \\ "@TRANSFORMATIONTYPE"))
+      .filter(_._2.text.contains("Stored"))
 
-    val procsNames = procs map (_._1)
+    val procsNames = procs.map(_._1)
 
-    val procsNamesE = procsNames map(_.text.split('.')(0).split('_').drop(1).reduce((x, y) => x + '_' + y))
+    val procsNamesE = procsNames.map(_.text.split('.')(0).split('_').drop(1).reduce((x, y) => x + '_' + y))
 
     object SeestEditAttrs extends RewriteRule {
       override def transform(n: Node): Seq[Node] = n match {
@@ -163,22 +161,22 @@ object InformaticaXMLConnectionsToProd {
     }
     
     val procsLookup = ((xml \\ "SESSTRANSFORMATIONINST" \\ "@TRANSFORMATIONNAME")
-                       zip (xml \\ "SESSTRANSFORMATIONINST" \\ "@TRANSFORMATIONTYPE"))
-      filter(_._2.text.contains("Lookup"))
+                       .zip(xml \\ "SESSTRANSFORMATIONINST" \\ "@TRANSFORMATIONTYPE"))
+      .filter(_._2.text.contains("Lookup"))
 
     val procsLookupNames = procsLookup map (_._1)
     
     val procsStored = ((xml \\ "SESSTRANSFORMATIONINST" \\ "@TRANSFORMATIONNAME")
-                       zip (xml \\ "SESSTRANSFORMATIONINST" \\ "@TRANSFORMATIONTYPE")) 
-      filter(_._2.text.contains("Stored"))
+                       .zip(xml \\ "SESSTRANSFORMATIONINST" \\ "@TRANSFORMATIONTYPE")) 
+      .filter(_._2.text.contains("Stored"))
     
     val procsStoredNames = procsStored map (_._1)
     
     val tableNames = procsLookupNames 
-      filter(x => procsStoredNames map(_.text.split('.')(0)).contains(x.text.split('.')(0))) 
-      map(_.text.split('.')(1).split('_').drop(1) reduce((x,y)=>x+'_'+y))
-      distinct
-      map(_.replaceFirst("_","."))
+      .filter(x => procsStoredNames map(_.text.split('.')(0)).contains(x.text.split('.')(0))) 
+      .map(_.text.split('.')(1).split('_').drop(1) reduce((x,y)=>x+'_'+y))
+      .distinct
+      .map(_.replaceFirst("_","."))
     
     val file = new File("listOfTablesToCopyFromProd")
 
