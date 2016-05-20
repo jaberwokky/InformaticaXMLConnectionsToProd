@@ -61,6 +61,8 @@ object InformaticaXMLConnectionsToProd {
     val procsNames = procs.map(_._1)
 
     val procsNamesE = procsNames.map(_.text.split('.')(0).split('_').drop(1).reduce((x, y) => x + '_' + y))
+    
+    val procsNamesEO = procsNamesE.map(_.replace("_ORPHAN",""))
 
     object SeestEditAttrs extends RewriteRule {
       override def transform(n: Node): Seq[Node] = n match {
@@ -120,12 +122,14 @@ object InformaticaXMLConnectionsToProd {
           !attrs("TRANSFORMATIONTYPE").contains("Target") &&
             !attrs("TRANSFORMATIONNAME").contains("DUAL") &&
             !procsNamesE.contains((attrs("TRANSFORMATIONNAME").split('.')(0).split('_').drop(1).reduceOption((x, y) => x + '_' + y)).getOrElse("null")) &&
+            !procsNamesEO.contains((attrs("TRANSFORMATIONNAME").split('.')(1).split('_').drop(1).reduceOption((x, y) => x + '_' + y)).getOrElse("null")) &&
             sesst.child.toString.contains("Connection Information")
         } => RuleSesstEdit(sesst)
         case sesstl @ Elem(_, "SESSTRANSFORMATIONINST", _, _, _*) if {
           val attrs = sesstl.attributes.asAttrMap
           attrs("TRANSFORMATIONTYPE").contains("Lookup") &&
             !procsNamesE.contains((attrs("TRANSFORMATIONNAME").split('.')(0).split('_').drop(1).reduceOption((x, y) => x + '_' + y)).getOrElse("null")) &&
+            !procsNamesEO.contains((attrs("TRANSFORMATIONNAME").split('.')(1).split('_').drop(1).reduceOption((x, y) => x + '_' + y)).getOrElse("null")) &&
             !sesstl.child.toString.contains("Connection Information")
         } => {
           val attrs = sesstl.attributes.asAttrMap
@@ -137,6 +141,7 @@ object InformaticaXMLConnectionsToProd {
           !attrs("TRANSFORMATIONTYPE").contains("Target") &&
             !attrs("SINSTANCENAME").contains("DUAL") &&
             !procsNamesE.contains((attrs("SINSTANCENAME").split('.')(0).split('_').drop(1).reduceOption((x, y) => x + '_' + y)).getOrElse("null"))
+            !procsNamesEO.contains((attrs("SINSTANCENAME").split('.')(1).split('_').drop(1).reduceOption((x, y) => x + '_' + y)).getOrElse("null"))
         } => RuleSesseEditAttrs(sesse)
         case other => other
       }
@@ -173,7 +178,7 @@ object InformaticaXMLConnectionsToProd {
     val procsStoredNames = procsStored map (_._1)
     
     val tableNames = procsLookupNames 
-      .filter(x => procsStoredNames map(_.text.split('.')(0)).contains(x.text.split('.')(0))) 
+      .filter(x => procsStoredNames.map(_.text.split('.')(0)).contains(x.text.split('.')(0))) 
       .map(_.text.split('.')(1).split('_').drop(1) reduce((x,y)=>x+'_'+y))
       .distinct
       .map(_.replaceFirst("_","."))
