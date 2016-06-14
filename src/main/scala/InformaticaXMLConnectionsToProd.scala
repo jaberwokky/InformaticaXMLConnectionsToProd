@@ -17,14 +17,16 @@ object InformaticaXMLConnectionsToProd {
    * @param args the command line arguments
    */
   def main(args: Array[String]): Unit = {
-    
+
     val f = javax.xml.parsers.SAXParserFactory.newInstance()
 
-    f.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false)
+    //f.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false)
 
-    val p = f.newSAXParser()
+    //val p = f.newSAXParser()
 
-    val xml = scala.xml.XML.withSAXParser(p).load(args(0))
+    //val xml = scala.xml.XML.withSAXParser(p).load(args(0))
+
+    val xml = scala.xml.XML.load(args(0))
 
     case class GenAttr(
       pre: Option[String],
@@ -55,14 +57,14 @@ object InformaticaXMLConnectionsToProd {
       chainMetaData(unchainMetaData(m).map(f))
 
     val procs = ((xml \\ "SESSTRANSFORMATIONINST" \\ "@TRANSFORMATIONNAME")
-                 .zip(xml \\ "SESSTRANSFORMATIONINST" \\ "@TRANSFORMATIONTYPE"))
+      .zip(xml \\ "SESSTRANSFORMATIONINST" \\ "@TRANSFORMATIONTYPE"))
       .filter(_._2.text.contains("Stored"))
 
     val procsNames = procs.map(_._1)
 
     val procsNamesE = procsNames.map(_.text.split('.')(0).split('_').drop(1).reduce((x, y) => x + '_' + y))
-    
-    val procsNamesEO = procsNamesE.map(_.replace("_ORPHAN",""))
+    val procsNamesEO = procsNamesE.map(_.replace("_ORPHAN", ""))
+
 
     object SeestEditAttrs extends RewriteRule {
       override def transform(n: Node): Seq[Node] = n match {
@@ -94,8 +96,7 @@ object InformaticaXMLConnectionsToProd {
 
     object SesstEdit extends RewriteRule {
       override def transform(n: Node): Seq[Node] = n match {
-        case fn @ Elem(prefix, "ATTRIBUTE", attribs, scope, _*) 
-          if attribs.asAttrMap("NAME") == "Connection Information" => RuleSesstEditAttrs(fn)
+        case fn @ Elem(prefix, "ATTRIBUTE", attribs, scope, _*) if attribs.asAttrMap("NAME") == "Connection Information" => RuleSesstEditAttrs(fn)
         case other => other
       }
     }
@@ -119,35 +120,35 @@ object InformaticaXMLConnectionsToProd {
       override def transform(n: Node): Seq[Node] = n match {
         case sesst @ Elem(_, "SESSTRANSFORMATIONINST", _, _, _*) if {
           val attrs = sesst.attributes.asAttrMap
-          !attrs("TRANSFORMATIONTYPE").contains("Target") &&
-            !attrs("TRANSFORMATIONNAME").contains("DUAL") &&
-            !procsNamesE.contains((attrs("TRANSFORMATIONNAME").split('.').lift(0).toString.split('_').drop(1).reduceOption((x, y) => x + '_' + y)).getOrElse("null")) &&
+          !attrs("TRANSFORMATIONTYPE").toLowerCase.contains("target") &&
+            !attrs("TRANSFORMATIONNAME").toLowerCase.contains("dual") &&
+            !procsNamesE.contains((attrs("TRANSFORMATIONNAME").split('.')(0).split('_').drop(1).reduceOption((x, y) => x + '_' + y)).getOrElse("null")) &&
             !procsNamesEO.contains((attrs("TRANSFORMATIONNAME").split('.').lift(1).toString.split('_').drop(1).reduceOption((x, y) => x + '_' + y)).getOrElse("null")) &&
-            sesst.child.toString.contains("Connection Information")
+            sesst.child.toString.toLowerCase.contains("connection information")
         } => RuleSesstEdit(sesst)
         case sesstl @ Elem(_, "SESSTRANSFORMATIONINST", _, _, _*) if {
           val attrs = sesstl.attributes.asAttrMap
-          attrs("TRANSFORMATIONTYPE").contains("Lookup") &&
-            !procsNamesE.contains((attrs("TRANSFORMATIONNAME").split('.').lift(0).toString.split('_').drop(1).reduceOption((x, y) => x + '_' + y)).getOrElse("null")) &&
+          attrs("TRANSFORMATIONTYPE").toLowerCase.contains("lookup") &&
+            !procsNamesE.contains((attrs("TRANSFORMATIONNAME").split('.')(0).split('_').drop(1).reduceOption((x, y) => x + '_' + y)).getOrElse("null")) &&
             !procsNamesEO.contains((attrs("TRANSFORMATIONNAME").split('.').lift(1).toString.split('_').drop(1).reduceOption((x, y) => x + '_' + y)).getOrElse("null")) &&
-            !sesstl.child.toString.contains("Connection Information")
+            !sesstl.child.toString.toLowerCase.contains("connection information")
         } => {
           val attrs = sesstl.attributes.asAttrMap
           val vl_prf = attrs("TRANSFORMATIONNAME").split('.').lift(1).toString.split('_').lift(1).toString
           val reg = """Some\((.*)\)""".r
           val reg2 = """None""".r
           val vl_p = vl_prf match {
-              case reg(s1) => s1
-              case _ => "ETL"
+            case reg(s1) => s1
+            case _ => "ETL"
           }
           val vl = ("EDW_" + vl_p + "_PROD").toUpperCase
           addChild(n, <ATTRIBUTE NAME="Connection Information" VALUE={ vl }/>)
         }
         case sesse @ Elem(_, "SESSIONEXTENSION", _, _, _*) if {
           val attrs = sesse.attributes.asAttrMap
-          !attrs("TRANSFORMATIONTYPE").contains("Target") &&
-            !attrs("SINSTANCENAME").contains("DUAL") &&
-            !procsNamesE.contains((attrs("SINSTANCENAME").split('.').lift(0).toString.split('_').drop(1).reduceOption((x, y) => x + '_' + y)).getOrElse("null"))
+          !attrs("TRANSFORMATIONTYPE").toLowerCase.contains("target") &&
+            !attrs("SINSTANCENAME").toLowerCase.contains("dual") &&
+            !procsNamesE.contains((attrs("SINSTANCENAME").split('.')(0).split('_').drop(1).reduceOption((x, y) => x + '_' + y)).getOrElse("null")) &&
             !procsNamesEO.contains((attrs("SINSTANCENAME").split('.').lift(1).toString.split('_').drop(1).reduceOption((x, y) => x + '_' + y)).getOrElse("null"))
         } => RuleSesseEditAttrs(sesse)
         case other => other
@@ -158,46 +159,51 @@ object InformaticaXMLConnectionsToProd {
 
     val newXml = RuleMainConnectionTransoform(xml)
 
-    val ddd = new scala.xml.dtd.DocType("POWERMART",
-                                        scala.xml.dtd.SystemID("powrmart.dtd"),
-                                        Nil)
-    
+    val ddd = new scala.xml.dtd.DocType(
+      "POWERMART",
+      scala.xml.dtd.SystemID("powrmart.dtd"),
+      Nil
+    )
+
     scala.xml.XML.save("testxmld.xml", newXml, "windows-1251", true, ddd)
 
-    var listOfTables:List[String] = List()
-    
+    var listOfTables: List[String] = List()
+
     try {
-      listOfTables = scala.io.Source.fromFile("listOfTablesToCopyFromProd").getLines.toList}
-    catch {
+      listOfTables = scala.io.Source.fromFile("listOfTablesToCopyFromProd").getLines.toList
+    } catch {
       case e: Exception => {}
     }
-    
+
     val procsLookup = ((xml \\ "SESSTRANSFORMATIONINST" \\ "@TRANSFORMATIONNAME")
-                       .zip(xml \\ "SESSTRANSFORMATIONINST" \\ "@TRANSFORMATIONTYPE"))
+      .zip(xml \\ "SESSTRANSFORMATIONINST" \\ "@TRANSFORMATIONTYPE"))
       .filter(_._2.text.contains("Lookup"))
 
     val procsLookupNames = procsLookup map (_._1)
-    
+
     val procsStored = ((xml \\ "SESSTRANSFORMATIONINST" \\ "@TRANSFORMATIONNAME")
-                       .zip(xml \\ "SESSTRANSFORMATIONINST" \\ "@TRANSFORMATIONTYPE")) 
+      .zip(xml \\ "SESSTRANSFORMATIONINST" \\ "@TRANSFORMATIONTYPE"))
       .filter(_._2.text.contains("Stored"))
-    
+
     val procsStoredNames = procsStored map (_._1)
-    
-    val tableNames = procsLookupNames 
-      .filter(x => procsStoredNames.map(_.text.split('.')(0)).contains(x.text.split('.')(0))) 
-      .map(_.text.split('.')(1).split('_').drop(1) reduce((x,y)=>x+'_'+y))
+
+    val tableNames = procsLookupNames
+      .filter(x => procsStoredNames.map(_.text.split('.')(0)).contains(x.text.split('.')(0)))
+      .map(_.text.split('.').lift(1).toString.split('_').drop(1).reduceOption((x, y) => x + '_' + y).getOrElse("null"))
+      .filter(_ != "null")
       .distinct
-      .map(_.replaceFirst("_","."))
-    
+      .map(_.replaceFirst("_", "."))
+
     val file = new File("listOfTablesToCopyFromProd")
 
     val bw = new BufferedWriter(new FileWriter(file, true))
 
     tableNames.filter(
-      !listOfTables.contains(_)).map(
-      st => bw.write(st + "\n"))
-    
+      !listOfTables.contains(_)
+    ).map(
+        st => bw.write(st + "\n")
+      )
+
     bw.close()
   }
 

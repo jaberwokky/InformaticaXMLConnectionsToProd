@@ -75,3 +75,6 @@ compile
 project SampleProject
 clean
 compile
+project SampleProject
+clean
+compile
